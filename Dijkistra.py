@@ -455,7 +455,7 @@ def CheckAction(NewNode):
             VisitedQ.enqueue(NewNode)                                           #add to Q
             VisitedDict[ID] = parent_index #implement dijkistra cost here       #add to visited coupled with parent
             #dictionary will have 2 keys, list = [parent_index, cost]
-            
+            #TESTTESTTEST
             
 def MoveUp(NewNode):
     x, y = NewNode                                                             #check the action                           #array value at the blank ("0")
