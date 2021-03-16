@@ -37,7 +37,7 @@ print("Test Case (x,y) starting point is: \n", TestCaseXY, file=open("NodePath.t
 
 
 #Test Case Final State:  [x,y] format
-FinalStateXY = [50, 200]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
+FinalStateXY = [75,170]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
 y = yscale - FinalStateXY[1]
 x = FinalStateXY[0] 
 FinalState = [x, y]                                                             #x, y pixel coordinates
@@ -465,13 +465,13 @@ def CheckAction(NewNode, cost):
         if ID in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:             #if Node has been visited before, ensure it's stored cost is the LOWEST value
             VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
             cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
-       
-        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:         #answer NO, so this is a child --add to Q
+            #print("curr cost ",new_cost)
+        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:         #Node hasn't been visited, therefore cost map for this point should be infinity still
             #VisitedQ.enqueue(NewNode)                                         #add to Q -- NO LONGER NEEDED. Q is now for closed nodes only (already explored)
             VisitedQ_eachRound.append(NewNode)                                 #add to OPEN LIST for future node exploration
             VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
             cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
-            #print("new cost", new_cost)
+            #print("curr cost", new_cost)
             
 def MoveUp(NewNode):
     x, y = NewNode                                                             #check the action                           #array value at the blank ("0")
@@ -571,35 +571,37 @@ ID = tuple(initial_state)                                                      #
 
 count = 0
 while ID != FinalStateID: #will become "while explored node != G"              #pixel coors check if current node == final state                                                    #While loop until FinalState is reached
-    min=0                                                                      #initialize finding the lowest cost node
-    for i in range(len(VisitedQ_eachRound)):                                   #for each node in OPEN LIST
+    min=0
+    i = 0                                                                      #initialize finding the lowest cost node
+    #for i in range(len(VisitedQ_eachRound)):                                   #for each node in OPEN LIST
+    while i <= (len(VisitedQ_eachRound)):                                   #for each node in OPEN LIST
         #print("lenQ ", len(VisitedQ))
         #print("mini = ",min)
-        
-        print("i = ", i)
-        if count == 2412:
-            print("lenQ ", len(VisitedQ_eachRound))
-            print("min=i = ",min)
-            print("cost map min: ", cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]])
+
+        #print("i = ", i)
+        #if count == 2412:
+            #print("lenQ ", len(VisitedQ_eachRound))
+            #print("min=i = ",min)
+            #print("cost map min: ", cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]])
 
             #outputVideo.release()
             #sys.exit()  
-
+        while cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]] < cost_map[VisitedQ_eachRound[i][0],VisitedQ_eachRound[i][1]]:    #choose lowest cost
+            i += 1
         if cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]] > cost_map[VisitedQ_eachRound[i][0],VisitedQ_eachRound[i][1]]:    #choose lowest cost
             min = i                                                            #choose node to be explored = lowest costing one
 
             count = count + 1
             print("count =",count)
             #print("mini = ",min)
-            
-                
+                        
                 
         Checkit = VisitedQ_eachRound.pop(min)                                  #remove lowest costing node from OPEN LIST and explore it                               #answer NO, so remove FIFO node from Q and store in a variable
         VisitedQ.enqueue(Checkit)                                              #add this node to the CLOSED list
         ID = tuple(Checkit)                                                    #tuple pixel coors                                                   #Get the tuple value of the node in variable
         parent_ID = ID                                                         #Make node a parent
         ActionSet(Checkit)                                                     #Get the children
-
+        
 
 
 #print("length Q ",len(VisitedQ))
