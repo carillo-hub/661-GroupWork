@@ -118,8 +118,8 @@ class Queue:
             return None 
 
 
-VisitedQ = Queue()                                                              #Initialize the visited QUEUE --will store the node matrices 
-VisitedQ_eachRound = []
+VisitedQ = Queue()                                                             #Initialize the visited QUEUE - CLOSED (explored) NODE LIST 
+VisitedQ_eachRound = []                                                        #Initialize the visited LIST - OPEN (not yet explored) NODE LIST
 
 #############################################################################################
 # Define boundaries and obstacles (reads nodes as XY coods, checks if in obstacles PIXEL coordinates)
@@ -445,33 +445,32 @@ def CheckAction(NewNode, cost):
    
     hit_goal_costs = []
     global FinalStateID
-    global hit_goal
-    VisitedQ_eachRound = []
+
+
+    ID = tuple(NewNode)                                                        #get the tuple of child node
+    new_cost = cost_map[parent_ID[0],parent_ID[1]] + cost                      #total cost for child node
     
-    ID = tuple(NewNode)                                                         #get the tuple of child node
-    new_cost = cost_map[parent_ID[0],parent_ID[1]] + cost    
     
-    
-    if ID == FinalStateID:                                                      #check if child node == final node
+    if ID == FinalStateID:                                                     #check if child node == final node
         
         print("\nThis Game Over \n Final State Node: \n", NewNode, file=open("NodePath.txt", "a"))
-        hit_goal = hit_goal + 1
         hit_goal_costs.append([parent_ID, new_cost]) 
         
-        VisitedDict[ID] = parent_ID                                          #answer YES, so add to visited dict
+        VisitedDict[ID] = parent_ID                                            #answer YES, so add to visited Dictionary the child/parent
         
-        roadmap(ID, hit_goal_costs)                                                             #compute the roadmap from initial to final state
+        roadmap(ID, hit_goal_costs)                                            #compute the roadmap from initial to final state
     
     else: 
 
-        if ID in VisitedDict:                                                   #Check if ID was visited
-            pass                                                                #answer YES, so move on
+        if ID in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:             #if Node has been visited before, ensure it's stored cost is the LOWEST value
+            VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
+            cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
        
-        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:                   #answer NO, so this is a child --add to Q
-            VisitedQ.enqueue(NewNode)                                           #add to Q
-            VisitedQ_eachRound.append(NewNode)
-            VisitedDict[ID] = parent_ID #implement dijkistra cost here       #add to visited coupled with parent
-            cost_map[ID[0],ID[1]] = new_cost 
+        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:         #answer NO, so this is a child --add to Q
+            #VisitedQ.enqueue(NewNode)                                         #add to Q -- NO LONGER NEEDED. Q is now for closed nodes only (already explored)
+            VisitedQ_eachRound.append(NewNode)                                 #add to OPEN LIST for future node exploration
+            VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
+            cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
             #print("new cost", new_cost)
             
 def MoveUp(NewNode):
@@ -553,56 +552,53 @@ def ActionSet(CurrentNode):
 # Follow the flow chart
 #############################################################################################
 
-initial_stateID = tuple(initial_state)                                           #tuple pixel coors
+initial_stateID = tuple(initial_state)                                         #tuple pixel coors
 print("\nInitial State node  ", initial_stateID)
 
-cost_map=np.inf*np.ones((300,400))                      #initialize cost map where each node = infinity
-cost_map[initial_state[0],initial_state[1]]=0           #cost at initial state = 0
+cost_map=np.inf*np.ones((300,400))                                             #initialize cost map where each node = infinity
+cost_map[initial_state[0],initial_state[1]]=0                                  #cost at initial state = 0
 new_cost = 0
-global hit_goal
-hit_goal = 0                                            #will need to hit the goal max #times and then choose time with lowest cost
 
 
-VisitedDict[initial_stateID] = 'Initial State'                                   #add initial state into Visited Data Structure
-VisitedQ.enqueue(initial_state)                                                  #add initial state into Q
-VisitedQ_eachRound.append(initial_state)                         #[x,y] pix coors
+VisitedDict[initial_stateID] = 'Initial State'                                 #add initial state into Visited Data Structure
+VisitedQ_eachRound.append(initial_state)                                       #add initial state [x,y] pix coors to OPEN LIST
+#VisitedQ.enqueue(initial_state)                                                #add initial state into Q - CLOSED LIST
+
 Checkit = 0
-ID = tuple(initial_state)                                                        #tuple pixel coors
+ID = tuple(initial_state)                                                      #tuple pixel coors
 
 
 
 count = 0
-while ID != FinalStateID:                                                        #pixel coors check if current node == final state                                                    #While loop until FinalState is reached
-    min=0
-    for i in range(len(VisitedQ_eachRound)):                  #for each coor set in Q
+while ID != FinalStateID: #will become "while explored node != G"              #pixel coors check if current node == final state                                                    #While loop until FinalState is reached
+    min=0                                                                      #initialize finding the lowest cost node
+    for i in range(len(VisitedQ_eachRound)):                                   #for each node in OPEN LIST
         #print("lenQ ", len(VisitedQ))
         #print("mini = ",min)
         
-        #print("i = ", i)
-        #if count == 1676:
-          #  print("lenQ ", len(VisitedQ))
-           # print("min=i = ",min)
-           # print("cost map min: ", cost_map[VisitedQ[min][0],VisitedQ[min][1]])
+        print("i = ", i)
+        if count == 2412:
+            print("lenQ ", len(VisitedQ_eachRound))
+            print("min=i = ",min)
+            print("cost map min: ", cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]])
 
             #outputVideo.release()
             #sys.exit()  
 
         if cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]] > cost_map[VisitedQ_eachRound[i][0],VisitedQ_eachRound[i][1]]:    #choose lowest cost
-            min = i                                   #set node to be explored = lowest costing one
+            min = i                                                            #choose node to be explored = lowest costing one
 
             count = count + 1
             print("count =",count)
             #print("mini = ",min)
             
-            
-            
                 
                 
-                
-        Checkit = VisitedQ.dequeue()                   #remove lowest costing node and explore it                               #answer NO, so remove FIFO node from Q and store in a variable
-        ID = tuple(Checkit)                                                          #tuple pixel coors                                                   #Get the tuple value of the node in variable
-        parent_ID = ID                                                            #Make node a parent
-        ActionSet(Checkit)                                                           #Get the children
+        Checkit = VisitedQ_eachRound.pop(min)                                  #remove lowest costing node from OPEN LIST and explore it                               #answer NO, so remove FIFO node from Q and store in a variable
+        VisitedQ.enqueue(Checkit)                                              #add this node to the CLOSED list
+        ID = tuple(Checkit)                                                    #tuple pixel coors                                                   #Get the tuple value of the node in variable
+        parent_ID = ID                                                         #Make node a parent
+        ActionSet(Checkit)                                                     #Get the children
 
 
 
