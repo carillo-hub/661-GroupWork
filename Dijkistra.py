@@ -7,6 +7,8 @@ import sys
 import datetime
 
 starttime = datetime.datetime.now()
+print("start time: ",starttime)
+
 
 #############################################################################################
 #Initial / Final State Info  ********TESTER INPUT NEEDED HERE FOR START/GOAL POINTS**********
@@ -19,9 +21,11 @@ global xscale
 yscale = 300   
 xscale = 400  
 
+
+
 #Test Case Initial State:  [x,y] format
 #Get pixel x,y coordinates of initial state
-TestCaseXY = [150,100]   #<--------------------------TESTER PUT INITIAL X,Y COORDINATE PT HERE
+TestCaseXY = [20,50]   #<--------------------------TESTER PUT INITIAL X,Y COORDINATE PT HERE
 # y = rows.... row 0 = y 300
 # v = cols.... col 0 = x 0 
 y = yscale - TestCaseXY[1]
@@ -30,16 +34,18 @@ initial_state = [x, y]  #pixel coors
 initial_stateID = tuple(initial_state)
 print("Test Case (x,y) starting point is: \n", TestCaseXY, file=open("NodePath.txt", "w"))
 
+
+
 #Test Case Final State:  [x,y] format
-FinalStateXY = [50, 50]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
+FinalStateXY = [50, 200]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
 y = yscale - FinalStateXY[1]
 x = FinalStateXY[0] 
 FinalState = [x, y]                                                             #x, y pixel coordinates
-
 global FinalStateID
 FinalStateID = tuple(FinalState)    #pixel coors                                #will be referenced for checking if it reached the goal
-
 print("Final state node (x,y): ", FinalStateID)
+
+
 print("\nTest Case (x,y) goal point is: \n",FinalStateXY, "\n\nThe nodes are stored as a tuple of (x,y) PIXEL coordinates, i.e. the Final State node is ", FinalStateID, file=open("NodePath.txt", "a"))
 
 
@@ -54,9 +60,9 @@ VisitedDict = {}
 #Video writer info
 #############################################################################################
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 fps = 2000
-outputVideo = cv2.VideoWriter("Sweeping.avi", fourcc, fps, (xscale, yscale))                #output resolution must match input frame (60% resized from 1980x1020)
+outputVideo = cv2.VideoWriter("Sweeping.mp4", fourcc, fps, (xscale, yscale))                #output resolution must match input frame (60% resized from 1980x1020)
 print("\n...Creating Video...\n")
 
 
@@ -113,7 +119,7 @@ class Queue:
 
 
 VisitedQ = Queue()                                                              #Initialize the visited QUEUE --will store the node matrices 
-
+VisitedQ_eachRound = []
 
 #############################################################################################
 # Define boundaries and obstacles (reads nodes as XY coods, checks if in obstacles PIXEL coordinates)
@@ -407,9 +413,9 @@ def Plot_OurMap(OurMap):
 # Define parent/child roadmap for initial state to goal state --MAP IS PIXEL COORS
 #############################################################################################
 
-def roadmap(ID):
+def roadmap(ID, hit_goal_costs):
     
-    global parent_index
+    global parent_ID
 
     OurMap = []                                                                 #initialize the roadmap
     OurMap.append(ID)                                                           #start by adding final state tuple
@@ -426,7 +432,7 @@ def roadmap(ID):
             break 
         
     print("\nOur Road Map is: ",OurMap , file=open("NodePath.txt", "a"))
-    
+    print("\n Cost to come was ", hit_goal_costs[0][1])
     Plot_OurMap(OurMap)
 
      
@@ -435,68 +441,87 @@ def roadmap(ID):
 # Define 4 functions to move the blank tile in each direction and store the NewNode in a list
 ############################################################################################# 
 
-def CheckAction(NewNode):
-    
+def CheckAction(NewNode, cost):
+   
+    hit_goal_costs = []
     global FinalStateID
+    global hit_goal
+    VisitedQ_eachRound = []
+    
     ID = tuple(NewNode)                                                         #get the tuple of child node
-        
+    new_cost = cost_map[parent_ID[0],parent_ID[1]] + cost    
+    
+    
     if ID == FinalStateID:                                                      #check if child node == final node
         
         print("\nThis Game Over \n Final State Node: \n", NewNode, file=open("NodePath.txt", "a"))
+        hit_goal = hit_goal + 1
+        hit_goal_costs.append([parent_ID, new_cost]) 
         
-        VisitedDict[ID] = parent_index                                          #answer YES, so add to visited dict
-        roadmap(ID)                                                             #compute the roadmap from initial to final state
+        VisitedDict[ID] = parent_ID                                          #answer YES, so add to visited dict
+        
+        roadmap(ID, hit_goal_costs)                                                             #compute the roadmap from initial to final state
     
     else: 
 
         if ID in VisitedDict:                                                   #Check if ID was visited
             pass                                                                #answer YES, so move on
-        if ID not in VisitedDict:                                               #answer NO, so this is a child --add to Q
+       
+        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:                   #answer NO, so this is a child --add to Q
             VisitedQ.enqueue(NewNode)                                           #add to Q
-            VisitedDict[ID] = parent_index #implement dijkistra cost here       #add to visited coupled with parent
-            #dictionary will have 2 keys, list = [parent_index, cost]
-            #TESTTESTTEST
+            VisitedQ_eachRound.append(NewNode)
+            VisitedDict[ID] = parent_ID #implement dijkistra cost here       #add to visited coupled with parent
+            cost_map[ID[0],ID[1]] = new_cost 
+            #print("new cost", new_cost)
             
 def MoveUp(NewNode):
     x, y = NewNode                                                             #check the action                           #array value at the blank ("0")
     swap1 = [x, y-1]                                                           #perform the action                     #array value to left of blank 
     NewNode = swap1                         
-    CheckAction(NewNode)                                                       #check the action
+    cost = 1
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveUpRight(NewNode):
     x, y = NewNode                                                             #check the action                            #array value at the blank ("0")
     swap1 = [x+1, y-1]                                                         #perform the action  
     NewNode = swap1                       
-    CheckAction(NewNode)                                                        #check the action
+    cost = 1.414
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveRight(NewNode):
     x, y = NewNode                                                             #check the action                           #array value at the blank ("0")
     swap1 = [x+1, y]                                                            #perform the action
     NewNode = swap1                        
-    CheckAction(NewNode)                                                        #check the action
+    cost = 1
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveDownRight(NewNode):
     x, y = NewNode                                                             #check the action
     swap1 = [x+1, y+1]                                                         #perform the action
     NewNode = swap1                    
-    CheckAction(NewNode)                                                       #check the action
+    cost = 1.414
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveDown(NewNode):
     x, y = NewNode                                                             #check the action
     swap1 = [x, y+1]                                                           #perform the action
     NewNode = swap1                         
-    CheckAction(NewNode)                                                       #check the action
+    cost = 1
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveDownLeft(NewNode):
     x, y = NewNode                                                              #check the action
     swap1 = [x-1, y+1]                                                          #perform the action
     NewNode = swap1                         
-    CheckAction(NewNode)                                                        #check the action
+    cost = 1.414
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveLeft(NewNode):
     x, y = NewNode                                                              #check the action
     swap1 = [x-1, y]                                                            #perform the action
     NewNode = swap1                        
-    CheckAction(NewNode)                                                        #check the action
+    cost = 1
+    CheckAction(NewNode, cost)                                                 #check the action
 def MoveUpLeft(NewNode):
     x, y = NewNode                                                              #unpack the node into pixel x y coords               
     swap1 = [x-1, y-1]                                                          #perform the action
     NewNode = swap1                          
-    CheckAction(NewNode)                                                        #check the action
+    cost = 1.414
+    CheckAction(NewNode, cost)                                                 #check the action
 
 def ActionSet(CurrentNode):
     
@@ -530,20 +555,58 @@ def ActionSet(CurrentNode):
 
 initial_stateID = tuple(initial_state)                                           #tuple pixel coors
 print("\nInitial State node  ", initial_stateID)
-VisitedDict[initial_stateID] = 'Initial State'                                   #add initial state into Visited Data Structure
 
+cost_map=np.inf*np.ones((300,400))                      #initialize cost map where each node = infinity
+cost_map[initial_state[0],initial_state[1]]=0           #cost at initial state = 0
+new_cost = 0
+global hit_goal
+hit_goal = 0                                            #will need to hit the goal max #times and then choose time with lowest cost
+
+
+VisitedDict[initial_stateID] = 'Initial State'                                   #add initial state into Visited Data Structure
 VisitedQ.enqueue(initial_state)                                                  #add initial state into Q
+VisitedQ_eachRound.append(initial_state)                         #[x,y] pix coors
 Checkit = 0
 ID = tuple(initial_state)                                                        #tuple pixel coors
 
+
+
+count = 0
 while ID != FinalStateID:                                                        #pixel coors check if current node == final state                                                    #While loop until FinalState is reached
+    min=0
+    for i in range(len(VisitedQ_eachRound)):                  #for each coor set in Q
+        #print("lenQ ", len(VisitedQ))
+        #print("mini = ",min)
+        
+        #print("i = ", i)
+        #if count == 1676:
+          #  print("lenQ ", len(VisitedQ))
+           # print("min=i = ",min)
+           # print("cost map min: ", cost_map[VisitedQ[min][0],VisitedQ[min][1]])
 
-    Checkit = VisitedQ.dequeue()                                                 #answer NO, so remove FIFO node from Q and store in a variable
-    ID = tuple(Checkit)                                                          #tuple pixel coors                                                   #Get the tuple value of the node in variable
-    parent_index = ID                                                            #Make node a parent
-    ActionSet(Checkit)                                                           #Get the children
+            #outputVideo.release()
+            #sys.exit()  
+
+        if cost_map[VisitedQ_eachRound[min][0],VisitedQ_eachRound[min][1]] > cost_map[VisitedQ_eachRound[i][0],VisitedQ_eachRound[i][1]]:    #choose lowest cost
+            min = i                                   #set node to be explored = lowest costing one
+
+            count = count + 1
+            print("count =",count)
+            #print("mini = ",min)
+            
+            
+            
+                
+                
+                
+        Checkit = VisitedQ.dequeue()                   #remove lowest costing node and explore it                               #answer NO, so remove FIFO node from Q and store in a variable
+        ID = tuple(Checkit)                                                          #tuple pixel coors                                                   #Get the tuple value of the node in variable
+        parent_ID = ID                                                            #Make node a parent
+        ActionSet(Checkit)                                                           #Get the children
 
 
 
-
-
+#print("length Q ",len(VisitedQ))
+#print("Visted Q", VisitedQ[0])
+#print("cost map at 0",cost_map[VisitedQ[0][0],VisitedQ[0][1]])
+#print("init",initial_state[0])
