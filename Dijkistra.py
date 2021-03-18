@@ -25,7 +25,7 @@ xscale = 400
 
 #Test Case Initial State:  [x,y] format
 #Get pixel x,y coordinates of initial state
-TestCaseXY = [20,50]   #<--------------------------TESTER PUT INITIAL X,Y COORDINATE PT HERE
+TestCaseXY = [75, 170]   #<--------------------------TESTER PUT INITIAL X,Y COORDINATE PT HERE
 # y = rows.... row 0 = y 300
 # v = cols.... col 0 = x 0 
 y = yscale - TestCaseXY[1]
@@ -37,7 +37,7 @@ print("Test Case (x,y) starting point is: \n", TestCaseXY, file=open("NodePath.t
 
 
 #Test Case Final State:  [x,y] format
-FinalStateXY = [75,170]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
+FinalStateXY = [100,10]  #<--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
 y = yscale - FinalStateXY[1]
 x = FinalStateXY[0] 
 FinalState = [x, y]                                                             #x, y pixel coordinates
@@ -415,7 +415,7 @@ def Plot_OurMap(OurMap):
 
 def roadmap(ID, hit_goal_costs):
     
-    global parent_ID
+    #global parent_ID
 
     OurMap = []                                                                 #initialize the roadmap
     OurMap.append(ID)                                                           #start by adding final state tuple
@@ -443,7 +443,7 @@ def roadmap(ID, hit_goal_costs):
 
 def CheckAction(NewNode, cost):
    
-    hit_goal_costs = []
+    #hit_goal_costs = []
     global FinalStateID
 
 
@@ -451,28 +451,28 @@ def CheckAction(NewNode, cost):
     new_cost = cost_map[parent_ID[0],parent_ID[1]] + cost                      #total cost for child node
     
     
-    if ID == FinalStateID:                                                     #check if child node == final node
+   # if ID == FinalStateID:                                                     #check if child node == final node
         
-        print("\nThis Game Over \n Final State Node: \n", NewNode, file=open("NodePath.txt", "a"))
-        hit_goal_costs.append([parent_ID, new_cost]) 
+     #   print("\nThis Game Over \n Final State Node: \n", NewNode, file=open("NodePath.txt", "a"))
+      #  hit_goal_costs.append([parent_ID, new_cost]) 
         
-        VisitedDict[ID] = parent_ID                                            #answer YES, so add to visited Dictionary the child/parent
+     #   VisitedDict[ID] = parent_ID                                            #answer YES, so add to visited Dictionary the child/parent
         
-        roadmap(ID, hit_goal_costs)                                            #compute the roadmap from initial to final state
+      #  roadmap(ID, hit_goal_costs)                                            #compute the roadmap from initial to final state
     
-    else: 
+    #else: 
 
-        if ID in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:             #if Node has been visited before, ensure it's stored cost is the LOWEST value
-            VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
-            cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
-            #print("curr cost ",new_cost)
-        if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:         #Node hasn't been visited, therefore cost map for this point should be infinity still
-            #VisitedQ.enqueue(NewNode)                                         #add to Q -- NO LONGER NEEDED. Q is now for closed nodes only (already explored)
-            VisitedQ_eachRound.append(NewNode)                                 #add to OPEN LIST for future node exploration
-            VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
-            cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
-            #print("curr cost", new_cost)
-            
+    if ID in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:             #if Node has been visited before, ensure it's stored cost is the LOWEST value
+        VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
+        cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
+        #print("curr cost ",new_cost)
+    if ID not in VisitedDict and cost_map[ID[0],ID[1]] > new_cost:         #Node hasn't been visited, therefore cost map for this point should be infinity still
+        #VisitedQ.enqueue(NewNode)                                         #add to Q -- NO LONGER NEEDED. Q is now for closed nodes only (already explored)
+        VisitedQ_eachRound.append(NewNode)                                 #add to OPEN LIST for future node exploration
+        VisitedDict[ID] = parent_ID                                        #add to visited Dictionary the child/parent
+        cost_map[ID[0],ID[1]] = new_cost                                   #ensure lowest cost is stored on cost map
+        #print("curr cost", new_cost)
+        
 def MoveUp(NewNode):
     x, y = NewNode                                                             #check the action                           #array value at the blank ("0")
     swap1 = [x, y-1]                                                           #perform the action                     #array value to left of blank 
@@ -571,6 +571,9 @@ ID = tuple(initial_state)                                                      #
 
 count = 0
 while ID != FinalStateID: #will become "while explored node != G"              #pixel coors check if current node == final state                                                    #While loop until FinalState is reached
+    
+
+
     min=0
     i = 0                                                                      #initialize finding the lowest cost node
     #for i in range(len(VisitedQ_eachRound)):                                   #for each node in OPEN LIST
@@ -602,6 +605,15 @@ while ID != FinalStateID: #will become "while explored node != G"              #
         parent_ID = ID                                                         #Make node a parent
         ActionSet(Checkit)                                                     #Get the children
         
+        if ID == FinalStateID:
+            hit_goal_costs = []
+            parent_ID = VisitedDict[ID]
+            new_cost = cost_map[ID[0],ID[1]]  
+            #print("\nThis Game Over \n Final State Node: \n", NewNode, file=open("NodePath.txt", "a"))
+            hit_goal_costs.append([parent_ID, new_cost]) 
+            
+            roadmap(ID, hit_goal_costs)                                            #compute the roadmap from initial to final state
+
 
 
 #print("length Q ",len(VisitedQ))
