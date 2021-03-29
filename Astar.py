@@ -186,10 +186,10 @@ def in_rectangle(Node):
     Mb_4 = np.polyfit([x4, x1], [y4, y1], 1)
 
     # find where Node is in relation to each side of rectangle
-    side1 = y - (Mb_1[0] * (x+total_clearance)) - (Mb_1[1] + total_clearance)
-    side2 = y - (Mb_2[0] * (x+total_clearance)) - (Mb_2[1] - total_clearance)
-    side3 = y - (Mb_3[0] * (x-total_clearance)) - (Mb_3[1] - total_clearance)
-    side4 = y - (Mb_4[0] * (x-total_clearance)) - (Mb_4[1] + total_clearance)
+    side1 = y - (Mb_1[0] * (x)) - (Mb_1[1] + total_clearance)
+    side2 = y - (Mb_2[0] * (x)) - (Mb_2[1] - total_clearance)
+    side3 = y - (Mb_3[0] * (x)) - (Mb_3[1] - total_clearance)
+    side4 = y - (Mb_4[0] * (x)) - (Mb_4[1] + total_clearance)
 
     # if inside rectangle, return trus
     if side1 <= 0 and side2 >= 0 and side3 >= 0 and side4 <= 0:
