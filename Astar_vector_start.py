@@ -25,14 +25,16 @@ TestCaseXY = [30, 50]  # <--------------------------TESTER PUT INITIAL X,Y COORD
 # v = cols.... col 0 = x 0
 y = yscale - TestCaseXY[1]
 x = TestCaseXY[0]
+#theta_start = TestCaseXY[2]
 initial_state = [x, y]  # pixel coors
 initial_stateID = tuple(initial_state)
 print("Test Case (x,y) starting point is: \n", TestCaseXY, file=open("NodePath.txt", "w"))
 
 # Test Case Final State:  [x,y] format
-FinalStateXY = [370, 50]  # <--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
+FinalStateXY = [370.5, 50]  # <--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
 y = yscale - FinalStateXY[1]
 x = FinalStateXY[0]
+#theta_goal = FinalStateXY[2]
 FinalState = [x, y]  # x, y pixel coordinates
 global FinalStateID
 FinalStateID = tuple(FinalState)  # pixel coors                    
@@ -47,10 +49,14 @@ global radius
 global clearance
 global theta
 global step
+global threshold
+global total_clearance
 radius = 10 # <--------------------------TESTER PUT ROBOT RADIUS HERE
 clearance = 5 # <--------------------------TESTER PUT ROBOT CLEARANCE HERE
 theta = 30  #in degrees, angle between each step size 
 step = 3  #magnitude of mvmt in units 1<=d<=10
+threshold = 0.5 #*** THIS IS NOT CONFIGURABLE. DO NOT CHANGE
+total_clearance = radius + clearance
 
 # Initialize Visited Dictionary
 VisitedDict = {}
@@ -83,11 +89,11 @@ def space(CurrentNode, mask, color):
     cv2.polylines(mask, C_shape, True, (0, 255, 0), 2)
 
     # Always draw in Initial/Final State points
-    cv2.circle(mask, (FinalState[0], FinalState[1]), 1, (255, 0, 0), 5)
-    cv2.circle(mask, (initial_state[0], initial_state[1]), 1, (255, 0, 0), 5)
+    cv2.circle(mask, (int(FinalState[0]), int(FinalState[1])), 1, (255, 0, 0), 5)
+    cv2.circle(mask, (int(initial_state[0]), int(initial_state[1])), 1, (255, 0, 0), 5)
 
     # Draw in Current Node points -- NEEDS PIXEL COORS
-    cv2.circle(mask, (CurrentNode[0], CurrentNode[1]), 1, color, 1)
+    cv2.circle(mask, (int(CurrentNode[0]), int(CurrentNode[1])), 1, color, 1)
 
     return mask
 
@@ -123,8 +129,6 @@ VisitedQ_eachRound = []  # Initialize the visited LIST - OPEN (not yet explored)
 
 
 
-global total_clearance
-total_clearance = radius + clearance
 
 def out_of_bounds(Node):
     global xscale
@@ -399,22 +403,22 @@ def CheckAction(NewNode, action_cost, CTG):
     global FinalStateID
     
     ID = tuple(NewNode)  # get the tuple of child node
-    CTC = ctc_map[parent_ID[0], parent_ID[1]] + action_cost  # total cost for child node
+    CTC = ctc_map[int((parent_ID[0])/threshold), int((parent_ID[1])/threshold)] + action_cost  # total cost for child node
     total_cost = CTC + CTG
     
-    if ID in VisitedDict and cost_map[ID[0], ID[1]] > total_cost:  # if Node has been visited before, ensure it's stored cost is the LOWEST value
+    if ID in VisitedDict and cost_map[int((ID[0])/threshold), int((ID[1])/threshold)  ] > total_cost:  # if Node has been visited before, ensure it's stored cost is the LOWEST value
         VisitedDict[ID] = parent_ID  # add to visited Dictionary the child/parent
-        ctc_map[ID[0], ID[1]] = CTC  # ensure lowest cost is stored on cost map
-        cost_map[ID[0], ID[1]] = total_cost
+        ctc_map[int((ID[0])/threshold), int((ID[1])/threshold)] = CTC  # ensure lowest cost is stored on cost map
+        cost_map[int((ID[0])/threshold), int((ID[1])/threshold)] = total_cost
         # print("curr cost ",new_cost)
         #print(ID[0], ID[1])
 
 
-    if ID not in VisitedDict and cost_map[ID[0], ID[1]] > total_cost:  # Node hasn't been visited, therefore cost map for this point should be infinity still
+    if ID not in VisitedDict and cost_map[int((ID[0])/threshold), int((ID[1])/threshold)] > total_cost:  # Node hasn't been visited, therefore cost map for this point should be infinity still
         VisitedQ_eachRound.append(NewNode)  # add to OPEN LIST for future node exploration
         VisitedDict[ID] = parent_ID  # add to visited Dictionary the child/parent
-        cost_map[ID[0], ID[1]] = total_cost  # ensure lowest cost is stored on cost map
-        ctc_map[ID[0], ID[1]] = CTC
+        cost_map[int((ID[0])/threshold), int((ID[1])/threshold)] = total_cost  # ensure lowest cost is stored on cost map
+        ctc_map[int((ID[0])/threshold), int((ID[1])/threshold)] = CTC
         # print("curr cost", new_cost)
 
 
@@ -478,9 +482,15 @@ def MoveUpLeft(NewNode):
 
 def Step1(NewNode):
     x, y = NewNode  # unpack the node into pixel x y coords
-    x_step = step*math.cos(theta)
-    y_step = step*math.sin(theta)
-    swap1 = [int(x + x_step), int(y + y_step)]  # perform the action
+    Xtheta = 1*theta
+    x_step = step*math.cos(Xtheta)
+    y_step = step*math.sin(Xtheta)
+    x_raw = (2*(x + x_step))
+    x_new = x_raw/2  #applies the 0.5 threshold
+    y_raw = (2*(y + y_step))
+    y_new = y_raw/2  #applies the 0.5 threshold
+
+    swap1 = [x_new, y_new]  # perform the action
     NewNode = swap1
     ctc = step          #incremental cost for the action
     ctg = ( (NewNode[0]-FinalState[0])**2 + (NewNode[1] - FinalState[1])**2   )**0.5   #euclidian distance CTG
@@ -488,9 +498,15 @@ def Step1(NewNode):
 
 def Step2(NewNode):
     x, y = NewNode  # unpack the node into pixel x y coords
-    x_step = step*math.cos(2*theta)
-    y_step = step*math.sin(2*theta)
-    swap1 = [int(x + x_step), int(y + y_step)]  # perform the action
+    Xtheta = 2*theta
+    x_step = step*math.cos(Xtheta)
+    y_step = step*math.sin(Xtheta)
+    x_raw = (2*(x + x_step))
+    x_new = x_raw/2  #applies the 0.5 threshold
+    y_raw = (2*(y + y_step))
+    y_new = y_raw/2  #applies the 0.5 threshold
+
+    swap1 = [x_new, y_new]  # perform the action
     NewNode = swap1
     ctc = step          #incremental cost for the action
     ctg = ( (NewNode[0]-FinalState[0])**2 + (NewNode[1] - FinalState[1])**2   )**0.5   #euclidian distance CTG
@@ -498,9 +514,15 @@ def Step2(NewNode):
 
 def Step3(NewNode):
     x, y = NewNode  # unpack the node into pixel x y coords
-    x_step = step*math.cos(3*theta)
-    y_step = step*math.sin(3*theta)
-    swap1 = [int(x + x_step), int(y + y_step)]  # perform the action
+    Xtheta = 3*theta
+    x_step = step*math.cos(Xtheta)
+    y_step = step*math.sin(Xtheta)
+    x_raw = (2*(x + x_step))
+    x_new = x_raw/2  #applies the 0.5 threshold
+    y_raw = (2*(y + y_step))
+    y_new = y_raw/2  #applies the 0.5 threshold
+
+    swap1 = [x_new, y_new]  # perform the action
     NewNode = swap1
     ctc = step          #incremental cost for the action
     ctg = ( (NewNode[0]-FinalState[0])**2 + (NewNode[1] - FinalState[1])**2   )**0.5   #euclidian distance CTG
@@ -508,23 +530,35 @@ def Step3(NewNode):
 
 def Step4(NewNode):
     x, y = NewNode  # unpack the node into pixel x y coords
-    x_step = step*math.cos(4*theta)
-    y_step = step*math.sin(4*theta)
-    swap1 = [int(x + x_step), int(y + y_step)]  # perform the action
+    Xtheta = 4*theta
+    x_step = step*math.cos(Xtheta)
+    y_step = step*math.sin(Xtheta)
+    x_raw = (2*(x + x_step))
+    x_new = x_raw/2  #applies the 0.5 threshold
+    y_raw = (2*(y + y_step))
+    y_new = y_raw/2  #applies the 0.5 threshold
+
+    swap1 = [x_new, y_new]  # perform the action
     NewNode = swap1
     ctc = step          #incremental cost for the action
     ctg = ( (NewNode[0]-FinalState[0])**2 + (NewNode[1] - FinalState[1])**2   )**0.5   #euclidian distance CTG
-    CheckAction(NewNode, ctc, ctg)  # check the action     
+    CheckAction(NewNode, ctc, ctg)  # check the action
 
 def Step5(NewNode):
     x, y = NewNode  # unpack the node into pixel x y coords
-    x_step = step*math.cos(5*theta)
-    y_step = step*math.sin(5*theta)
-    swap1 = [int(x + x_step), int(y + y_step)]  # perform the action
+    Xtheta = 5*theta
+    x_step = step*math.cos(Xtheta)
+    y_step = step*math.sin(Xtheta)
+    x_raw = (2*(x + x_step))
+    x_new = x_raw/2  #applies the 0.5 threshold
+    y_raw = (2*(y + y_step))
+    y_new = y_raw/2  #applies the 0.5 threshold
+
+    swap1 = [x_new, y_new]  # perform the action
     NewNode = swap1
     ctc = step          #incremental cost for the action
     ctg = ( (NewNode[0]-FinalState[0])**2 + (NewNode[1] - FinalState[1])**2   )**0.5   #euclidian distance CTG
-    CheckAction(NewNode, ctc, ctg)  # check the action 
+    CheckAction(NewNode, ctc, ctg)  # check the action
     
 def ActionSet(CurrentNode):
     global x
@@ -566,10 +600,10 @@ def ActionSet(CurrentNode):
 #initial_stateID = tuple(initial_state)  # tuple pixel coors
 print("\nInitial State node  ", initial_stateID)
 
-cost_map = np.inf * np.ones((400, 300))  # initialize cost map where each node = infinity
-cost_map[initial_state[0], initial_state[1]] = 0  # cost at initial state = 0
-ctc_map = np.inf * np.ones((400, 300))
-ctc_map[initial_state[0], initial_state[1]] = 0  # cost at initial state = 0
+cost_map = np.inf * np.ones((int(400/threshold), int(300/threshold)))  # initialize cost map where each node = infinity
+cost_map[int((initial_state[0])/threshold), int((initial_state[1])/threshold)] = 0  # cost at initial state = 0
+ctc_map = np.inf * np.ones((int(400/threshold), int(300/threshold)))
+ctc_map[int((initial_state[0])/threshold), int((initial_state[1])/threshold)] = 0  # cost at initial state = 0
 new_cost = 0
 
 VisitedDict[initial_stateID] = 'Initial State'  # add initial state into Visited Data Structure
@@ -588,7 +622,7 @@ while ID != FinalStateID:  # will become "while explored node != G"             
    
         for i in range (0,len(VisitedQ_eachRound)-1):  # for each node in OPEN LIST
                 
-            if cost_map[VisitedQ_eachRound[min][0], VisitedQ_eachRound[min][1]] > cost_map[VisitedQ_eachRound[i][0], VisitedQ_eachRound[i][1]]:  # choose lowest cost
+            if cost_map[int((VisitedQ_eachRound[min][0])/threshold), int((VisitedQ_eachRound[min][1])/threshold)] > cost_map[int((VisitedQ_eachRound[i][0])/threshold), int((VisitedQ_eachRound[i][1])/threshold)]:  # choose lowest cost
                 min = i  # choose node to be explored = lowest costing one
 
             #count = count + 1
