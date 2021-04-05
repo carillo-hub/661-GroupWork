@@ -6,9 +6,8 @@ The packages imported in the code are numpy, sys, cv2, math, and datetime
 Running the Phase 1 code:
 1A. To run in Spyder IDE ---execute the script with the "Run" icon. 
 	a. Tester MUST go into the code and manually key in the start and end points for the test. 
-	b. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map
-	c. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map
-	d. TestCaseXY variable is defined on line YZ of the code, FinalStateXY is defined on line XYZ.
+	b. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 25)
+	c. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 39)
 
 1B. To run in XYZ --- Dhyey if you want to put in how to run in pycharm feel free
 
