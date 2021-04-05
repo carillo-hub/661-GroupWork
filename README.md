@@ -5,24 +5,24 @@ The packages imported in the code are numpy, sys, cv2, math, and datetime
 -----------------------------------------------------------------------
 Running the Phase 1 code:
 1A. To run in Spyder IDE ---execute the script with the "Run" icon. 
-	a. Tester MUST go into the code and manually key in the start and end points for the test. 
-	b. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 25)
-	c. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 39)
-
 1B. To run in XYZ --- Dhyey if you want to put in how to run in pycharm feel free
+
+NOTE: Tester MUST go into the code and manually key in the start and end points for the test. 
+	a. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 25)
+	b. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 39)
+
 
 Running the Phase 2 code:
-1A. To run in Spyder IDE ---execute the script with the "Run" icon. 
-	a. Tester MUST go into the code and manually key in the start and end points for the test. 
-	b. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map
-	c. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map
-	d. TestCaseXY variable is defined on line YZ of the code, FinalStateXY is defined on line XYZ.
-	e. Robot RADIUS: 
-	f. Robot CLEARANCE: 
-	g. Robot STEP size: 
-	h. THETA direction: 
-
+1A. To run in Spyder IDE ---execute the script with the "Run" icon.
 1B. To run in XYZ --- Dhyey if you want to put in how to run in pycharm feel free
+
+NOTE: Tester MUST go into the code and manually key in the following inputs for the test.....
+	a.START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 32)
+	b. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 45)
+	c. Robot RADIUS  (line 84)
+	d. Robot CLEARANCE (line 85)
+	e. THETA direction  (line 86)
+	f. Robot STEP size  (line 87)
 
 --------------------------------------------------------------------------
 Note: An output NodePath.txt file with some test case results will overwrite every time.
