@@ -272,7 +272,7 @@ def Plot_OurMap(OurMap):
     runtime = endtime - starttime
     print("\nRun time: ", runtime)
 
-    print("\nDone. Can see results in NodePath.txt and Sweeping.mp4!")
+    print("\nDone. Can see results in NodePath.txt and Sweeping_Phase_1.mp4!")
     sys.exit()
 
 
