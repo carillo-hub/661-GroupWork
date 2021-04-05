@@ -69,7 +69,7 @@ VisitedDict = {}
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 fps = 2000
-outputVideo = cv2.VideoWriter("Sweeping.mp4", fourcc, fps, (xscale, yscale))  # output resolution must match input frame (60% resized from 1980x1020)
+outputVideo = cv2.VideoWriter("Sweeping_Phase_1.mp4", fourcc, fps, (xscale, yscale))  # output resolution must match input frame (60% resized from 1980x1020)
 print("\n...Creating Video...\n")
 
 
