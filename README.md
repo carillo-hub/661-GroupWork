@@ -30,4 +30,4 @@ Note: An output NodePath.txt file with some test case results will overwrite eve
 	
 Note: Nodes are stored as pixel coordinates, not standard x-y coordinates (only difference is the Y pixel coordinate will be inverted) 	 
 
-Code Output: The output video is called "Sweeping.mp4"
+Code Output: The output video is called "Sweeping_Phase_X.mp4", where "X" is "1" or "2"
