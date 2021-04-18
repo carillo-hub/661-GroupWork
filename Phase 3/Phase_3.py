@@ -39,8 +39,8 @@ threshold = 0.5  # *** THIS IS NOT CONFIGURABLE. DO NOT CHANGE
 # Get pixel x,y coordinates and req'd inputs from tester
 Theta_Start = 200   #<------------TESTER PUT INITIAL HEADING ANGLE IN DEGREES HERE
 TestCaseXY = [370, 50, Theta_Start]  # <--------------------------TESTER PUT INITIAL X,Y COORDINATE PT HERE
-RPM1 = 10 #<------------TESTER PUT RPM 1 VALUE HERE
-RPM2 = 20 #<------------TESTER PUT RPM 2 VALUE HERE 
+RPM1 = 5 #<------------TESTER PUT RPM 1 VALUE HERE
+RPM2 = 10 #<------------TESTER PUT RPM 2 VALUE HERE 
 FinalStateXY = [30, 50]  # <--------------------------TESTER PUT GOAL X,Y COORDINATE PT HERE
 clearance = 5  #<------------TESTER PUT robot clearance in pixels
 total_clearance = radius + clearance
@@ -411,7 +411,7 @@ def ActionSet(CurrentNode ):
     NewNode_copy = CurrentNode.copy()  #this will become the future parent node
     Theta_i = CurrentNode[2]
     print("new theta ",Theta_i)
-    actions=[(RPM1, RPM1), (RPM2, RPM2),(RPM1,0),(0,RPM1),(RPM1,RPM2),(RPM2,RPM1)]
+    actions=[(RPM1, RPM1), (RPM2, RPM2),(RPM2,0),(0,RPM2),(RPM1,0),(0,RPM1),(RPM1,RPM2),(RPM2,RPM1)]
     for action in actions:
         Step1(NewNode, Theta_i, action[0],action[1], NewNode_copy)
     
