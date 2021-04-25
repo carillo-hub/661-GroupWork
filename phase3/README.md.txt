@@ -16,15 +16,17 @@ Dependencies:
 numpy , cv2 , sys , datetime , math , time , rospy , geometry_msgs.msg 
 
 To run with ROS output: 
-Remember to set the flags for plotting_ROS_too = True &  plotting_Viz_only = False (on line 12 & 13)
-From the Linux terminal window type: roslaunch phase3 turtlebot3_map_world.launch 
-To test a different set of initial/goal points, remember to update both the Phase_3.py script and
-the launch file with the proper spawn location. 
+1.  Remember to set the flags for plotting_ROS_too = True &  plotting_Viz_only = False (on line 12 & 13)
+2.  The node package name is 'phase3'. Please try to keep this the same, as the launch file is configured 
+    for this node package name as well. 
+3.  From the Linux terminal window type: roslaunch phase3 turtlebot3_map_world.launch 
+4.  To test a different set of initial/goal points, remember to update both the Phase_3.py script and
+    the launch file with the proper spawn location. 
 
 
 Directory structure:
 
-phase3
+phase3   <---(node package name)
    |
    launch
    |    |
