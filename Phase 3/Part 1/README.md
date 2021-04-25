@@ -11,6 +11,7 @@
 * sys
 * datetime
 * math
+* time
 -----------------------------------------------------------------------
 # Instructions For Running the Phase 1 code:
 * Open the python file in Spyder/Pycharm IDE. 
