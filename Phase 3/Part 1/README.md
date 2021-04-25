@@ -15,6 +15,7 @@
 # Instructions For Running the Phase 1 code:
 * Open the python file in Spyder/Pycharm IDE. 
 * Check whether all the libraries are installed or not.
+* Set plotting_Viz_only = True & plotting_ROS_too = False (on line 12 & 13) if only a standard OpenCV visualization is desired (part 1).
 * NOTE: Tester MUST go into the code and manually key in the following inputs for the test.....
 * a. START points: variable name TestCaseXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 52). Default start point is [6,8].
 * b. END points: variable name FinalStateXY = [x,y], where x and y are the standard orientation coordinates from the obstacle map (line 60). Default goal point is [9,9].
