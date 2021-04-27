@@ -109,8 +109,8 @@ def space(CurrentNode, mask, color, thickness):
 
 
     # Always draw in Initial/Final State points
-    cv2.circle(mask, (int(FinalState[1]), int(FinalState[0])), 1, (255, 0, 0), 5)
-    cv2.circle(mask, (int(initial_state[1]), int(initial_state[0])), 1, (255, 0, 0), 5)
+    cv2.circle(mask, (int(FinalState[1]), int(FinalState[0])), 1, (0, 255, 0), 8)
+    cv2.circle(mask, (int(initial_state[1]), int(initial_state[0])), 1, (0, 255, 0), 8)
 
     # Draw in Current Node points -- NEEDS PIXEL COORS
     cv2.circle(mask, (int(CurrentNode[1]), int(CurrentNode[0])), 1, color, thickness)
@@ -168,7 +168,7 @@ def in_circle(Node):
     global xscale
     global yscale
     x = Node[1]
-    y = Node[0]
+    y = yscale -Node[0]
     r = 1 * scaling
 
     # if inside circle, return true
@@ -182,8 +182,7 @@ def in_rect_new(Node):
     global xscale
     global yscale
     x = Node[1]
-    y = Node[0]
-    #y = yscale - y
+    y = yscale - Node[0]
 
     if x >= ((3.75* scaling) - total_clearance) and x <= ((6.25 * scaling) + total_clearance) and y <= ((5.75* scaling) + total_clearance) and y >= ((4.25* scaling) - total_clearance):
         return True
@@ -426,70 +425,105 @@ for n in range (0,10*scaling):
 Cspace.remove(q_0)   #dont include q_0 in available sample population 
 Cspace.remove(q_f)   #dont include q_f in available sample population 
  
- 
+# RRT sampling iterations
 for i in range (0,100):
+    
+    #random sample alpha_i
     sample = random.randint(0,len(Cspace))  #index for random sample
     alpha_i = Cspace.pop(sample)   #pops random coors from Cspace = (x,y)
-    space(alpha_i, mask, (127,0,127), 8)
+    
+    #obstacle detection for alpha_i 
+    if in_obstacles(alpha_i) == True: 
+        sample = random.randint(0,len(Cspace))  #index for random sample
+        alpha_i = Cspace.pop(sample)   #pops random coors from Cspace = (x,y)
 
+
+    if in_obstacles(alpha_i) == False:
     
-    #check vertexes of RRT tree for q nearest node
-    min_dist = np.inf  
-    for point in range(0,len(RRT)):    #for all nodes in RRT tree...
-        a = alpha_i[0] - RRT[point][0] #find euclidean dist from each tree node to alpha_i 
-        b = alpha_i[1] - RRT[point][1] 
-        dist = (a ** 2 + b ** 2) ** 0.5
-        if dist < min_dist:  #if this euclid dist < min euclid dist...
-            min_dist = dist  #reset the min euclid dist
-            q_nearest = RRT[point]  #reset the nearest node 
-    VisitedDict[alpha_i] = q_nearest   #make nearest node in tree the parent of alpha_i
-    
-    
-    #check edges of RRT tree for q nearest node 
-    changed = 0  #use this to see if the q_nearest was changed after subsequent edge check 
-    for points in range(0,len(edges)):  #check all edge nodes to see if there is a closer q_nearest
-        c = alpha_i[0] - edges[points][0] #calc euclid dist from edge node to alpha_i 
-        d = alpha_i[1] - edges[points][1]
-        dist = (c ** 2 + d ** 2) ** 0.5
-        if dist < min_dist: #if have a new min_dist...
-            min_dist = dist   #reset the min euclid dist
-            q_nearest = edges[points]  #reset the nearest node
-            changed = 1   #flag to indicate an edge node was selected as q_nearest 
-    if changed == 1:             #if q_nearest is an edge --> edge node becomes a vertex
-        VisitedDict[alpha_i] = q_nearest  #make nearest node in tree the parent of alpha_i
-        edges.remove(q_nearest)  #remove q_nearest edge node from edge list 
-        RRT.append(q_nearest)    #add q_nearest as vertex to vertex list
-    
-    
-    #add all nodes in new edge to edges list
-    edge = np.polyfit([alpha_i[1], q_nearest[1]], [alpha_i[0], q_nearest[0]], 1)  #construct edge from q_nearest to alpha_i 
-    if alpha_i[1]+1 < q_nearest[1]:
-        low = alpha_i[1]+1 
-        high = q_nearest[1]
-    else: 
-        high = alpha_i[1]+1 
-        low = q_nearest[1]
-    
-    edge_open_list = []
-    for e in range(low,high):  #take all x pts between two nodes 
-        f = (edge[0] * (e)) + (edge[1])  #y=mx+b, find y 
-        edge_node = (int(f),e)  #get edge node 
-        edges.append(edge_node)  #add edge node to master edge node list 
-    
-    
-    space(q_nearest, mask, (127,0,127), 8)    
-    RRT.append(alpha_i)            #add alpha_i to RRT tree now   
-    
-    #draw new edge and vertex
-    pt1 = (q_nearest[1],q_nearest[0])  #for plotting, pt = (col, row) 
-    pt2 = (alpha_i[1],alpha_i[0])
-    cv2.line(mask, pt1, pt2, color = (127,0,127), thickness=2)
-    outputVideo.write(mask)
-    cv2.imshow("Plotting", mask)
-    cv2.waitKey(1)
+        #check vertexes of RRT tree for q nearest node
+        min_dist = np.inf  
+        for point in range(0,len(RRT)):    #for all nodes in RRT tree...
+            a = alpha_i[0] - RRT[point][0] #find euclidean dist from each tree node to alpha_i 
+            b = alpha_i[1] - RRT[point][1] 
+            dist = (a ** 2 + b ** 2) ** 0.5
+            if dist < min_dist:  #if this euclid dist < min euclid dist...
+                min_dist = dist  #reset the min euclid dist
+                q_nearest = RRT[point]  #reset the nearest node 
         
-                
         
+        #check edges of RRT tree for q nearest node 
+        changed = 0  #use this to see if the q_nearest was changed after subsequent edge check 
+        for points in range(0,len(edges)):  #check all edge nodes to see if there is a closer q_nearest
+            c = alpha_i[0] - edges[points][0] #calc euclid dist from edge node to alpha_i 
+            d = alpha_i[1] - edges[points][1]
+            dist = (c ** 2 + d ** 2) ** 0.5
+            if dist < min_dist: #if have a new min_dist...
+                min_dist = dist   #reset the min euclid dist
+                q_nearest = edges[points]  #reset the nearest node
+                changed = 1   #flag to indicate an edge node was selected as q_nearest 
+        if changed == 1:             #if q_nearest is an edge --> edge node becomes a vertex
+            edges.remove(q_nearest)  #remove q_nearest edge node from edge list 
+            RRT.append(q_nearest)    #add q_nearest as vertex to vertex list
+            
+
+        #add all nodes in new branch to edges list
+        if alpha_i != q_nearest:
+            edge = np.polyfit([alpha_i[1], q_nearest[1]], [alpha_i[0], q_nearest[0]], 1)  #construct edge from q_nearest to alpha_i 
+            if alpha_i[1]+1 < q_nearest[1]: #set up x-low/x-high range for scanning the edge nodes
+                low = alpha_i[1]+1 
+                high = q_nearest[1]
+            else: 
+                high = alpha_i[1]+1 
+                low = q_nearest[1]
+            
+            edge_open_list = []  #open edge list for scanning 
+            for e in range(low,high):  #take all x pts between two nodes 
+                f = (edge[0] * (e)) + (edge[1])  #y=mx+b, find y 
+                edge_node = (int(f),e)  #get each edge node 
+                edge_open_list.append(edge_node)  #add edge node to an open edge node list 
+            #print("open list ",edge_open_list)
+            
+            #add new edges from Tree --> alpha_i  (branching outwards)
+            if len(edge_open_list) > 1:
+                front = edge_open_list[0] #consider the first edge in the list 
+                back = edge_open_list[-1] #consider the last edge in the list 
+                a0 = front[0] - q_nearest[0] #calc euclid dist from q_nearest to the first/last edge in list
+                b0 = front[1] - q_nearest[1]
+                a1 = back[0] - q_nearest[0]
+                b1 = back[1] - q_nearest[1]
+                dist0 = (a0 ** 2 + b0 ** 2) ** 0.5
+                dist1 = (a1 ** 2 + b1 ** 2) ** 0.5
+                if dist1 < dist0: edge_open_list = sorted(edge_open_list, reverse=True) #list order should be reversed to branch from q_nearest outwards
+              
+            #Collision Detection for the clean edge/branch 
+            for each in range(0,len(edge_open_list)): #for each edge node in open list starting from q_nearest --> branching out
+                if in_obstacles(edge_open_list[each]) == True:  #check if the edge node is in obst
+                    edge_open_list = edge_open_list[:each] #cut off the rest of the edge open list (rest of the branch) after collision det
+                    if edge_open_list == []: break
+                    else:
+                        alpha_i = edge_open_list[-1] #have to reset alpha_i as the tip of the branch
+                        edge_open_list = edge_open_list[:-1]  #remove alpha_i from edge list
+                        if alpha_i in Cspace: Cspace.remove(alpha_i) #remove alpha_i from Cspace list 
+                    break
+            
+            #ready to end this iteration 
+            for clean in edge_open_list: edges.append(clean) #can now add the open edge list to the master edge list 
+            space(alpha_i, mask, (127,0,0), 8) #can draw alpha_i as a node on the map now
+            space(q_nearest, mask, (127,0,0), 8) #can draw q_nearest as a node on the map now
+            VisitedDict[alpha_i] = q_nearest  #make nearest node in tree the parent of alpha_i
+            RRT.append(alpha_i)            #add alpha_i to RRT tree now as a vertex   
+        
+            #draw new edge and vertex
+            pt1 = (q_nearest[1],q_nearest[0])  #for plotting, pt = (col, row) 
+            pt2 = (alpha_i[1],alpha_i[0])
+            cv2.line(mask, pt1, pt2, color = (127,0,127), thickness=2)
+            outputVideo.write(mask)
+            cv2.imshow("Plotting", mask)
+            cv2.waitKey(1)
+            
+#perform Astar on RRT vertexes
+                   
+            
   
 
 
