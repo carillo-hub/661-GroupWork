@@ -49,10 +49,6 @@ project_5   <---(node package name)
    package.xml 
    |
    README.md
-   |
-   ROSoutput_Basic_RRT_1559 (showing test case (1,5) to (5,9) with Basic RRT)
-   |
-   ROSoutput_Fast_RRT_1559 (showing test case (1,5) to (5,9) with Fast RRT)  
 
 
 Code Output: 
